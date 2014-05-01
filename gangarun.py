@@ -4,11 +4,15 @@ import sys
 import argparse
 
 parser = argparse.ArgumentParser(description='Small script to run ganga job')
+parser.add_argument("testing", help="testing argument", action="store")
+parser.add_argument("testingmultiple", help="testing multiple argument", action="store", nargs='+')
 parser.add_argument("-o", "--optionsfile", help="specify options file", action="store")
 parser.add_argument("-d", "--datafile", help="specify data/mc file", action="store")
 parser.parse_args()
 
 args = parser.parse_args()
+
+print args
 
 if args.optionsfile:
     optionsFile = args.optionsfile
