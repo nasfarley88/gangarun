@@ -3,28 +3,39 @@
 import sys
 import argparse
 
+
+# Taken from
+# http://stackoverflow.com/questions/4042452/display-help-message-with-python-argparse-when-script-is-called-without-any-argu
+class MyParser(argparse.ArgumentParser):
+    def error(self, message):
+        sys.stderr.write('error: %s\n' % message)
+        self.print_help()
+        sys.exit(2)
+
+# Pay attention:
+# the f in file is capitalised for the 'local' copies of these variables so
+# optionsfile -> optionsFile etc.
 parser = argparse.ArgumentParser(description='Small script to run ganga job')
-parser.add_argument("testing", help="testing argument", action="store")
-parser.add_argument("testingmultiple", help="testing multiple argument", action="store", nargs='+')
-parser.add_argument("-o", "--optionsfile", help="specify options file", action="store")
-parser.add_argument("-d", "--datafile", help="specify data/mc file", action="store")
+parser.add_argument("optionsfile", help="specify options file", action="store")
+parser.add_argument("datafiles", help="specify data/mc file(s)", action="store", nargs='+')
 parser.parse_args()
 
 args = parser.parse_args()
 
 print args
 
+# Here is where the arguments are taken from the parser
 if args.optionsfile:
     optionsFile = args.optionsfile
-else:
-    print "No options file specified"
-    sys.exit()
+# else:
+#     print "No options file specified"
+#     sys.exit()
 
-if args.datafile:
-    dataFiles = [ args.datafile ]
-else:
-    print "No data/mc file specified"
-    sys.exit()
+if args.datafiles:
+    dataFiles = args.datafiles
+# else:
+#     print "No data/mc file specified"
+#     sys.exit()
 
 def submitJob(dataFiles,optionsFile):
     """Function to submit jobs to the grid from a string of data files and a
@@ -42,7 +53,6 @@ specifed options file."""
 
         bkq = BKQuery()
 
-        #bkq.path = "/MC/2012/Beam4000GeV-2012-MagUp-Nu2.5-BcVegPy/Sim08d/Digi13/Trig0x409f0045/Reco14a/Stripping20NoPrescalingFlagged/14103020/ALLSTREAMS.DST"
         bkq.path = i
 
         data = bkq.getDataset()
