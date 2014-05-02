@@ -18,6 +18,7 @@ class MyParser(argparse.ArgumentParser):
 parser = argparse.ArgumentParser(description='Small script to run ganga job')
 parser.add_argument("optionsfile", help="specify options file", action="store")
 parser.add_argument("datafiles", help="specify data/mc file(s)", action="store", nargs='+')
+parser.add_argument("-j", "--jobs", help="specify number of jobs (default is 20)", type=int, action="store")
 parser.parse_args()
 
 args = parser.parse_args()
@@ -27,15 +28,14 @@ print args
 # Here is where the arguments are taken from the parser
 if args.optionsfile:
     optionsFile = args.optionsfile
-# else:
-#     print "No options file specified"
-#     sys.exit()
 
 if args.datafiles:
     dataFiles = args.datafiles
-# else:
-#     print "No data/mc file specified"
-#     sys.exit()
+
+if args.jobs:
+    Jobs = args.jobs
+else:
+    Jobs = 20
 
 def submitJob(dataFiles,optionsFile):
     """Function to submit jobs to the grid from a string of data files and a
@@ -49,7 +49,7 @@ specifed options file."""
         j.backend=Dirac()
         # j.backend=Interactive()
 
-        j.splitter=SplitByFiles(filesPerJob=20)
+        j.splitter=SplitByFiles(filesPerJob=Jobs)
 
         bkq = BKQuery()
 
