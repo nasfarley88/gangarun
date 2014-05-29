@@ -17,8 +17,13 @@ class MyParser(argparse.ArgumentParser):
 # optionsfile -> optionsFile etc.
 parser = argparse.ArgumentParser(description='Small script to run ganga job')
 parser.add_argument("optionsfile", help="specify options file", action="store")
-parser.add_argument("datafiles", help="specify data/mc file(s)", action="store", nargs='+')
-parser.add_argument("-j", "--jobs", help="specify number of jobs (default is 20)", type=int, action="store")
+parser.add_argument("datafiles", help="specify data/mc file(s)", action="store", nargs='*')
+parser.add_argument("-j", "--jobs", help="specify number of jobs (default is 20)", type=int, action="store", default=20)
+parser.add_argument("--nosplit", help="when specified, the splitter is not defined.", action='store_true')
+parser.add_argument("--browse", help="browse for specified data file", action='store_true')
+parser.add_argument("-a","--application", help="specify application being used", default='DaVinci()')
+parser.add_argument("--readinputdata",help="specify data .py fie")
+parser.add_argument("--dryrun", help="Dry run the program, without submitting or setting up a job", action='store_true')
 parser.parse_args()
 
 args = parser.parse_args()
@@ -31,34 +36,40 @@ if args.optionsfile:
 
 if args.datafiles:
     dataFiles = args.datafiles
-
-if args.jobs:
-    Jobs = args.jobs
 else:
-    Jobs = 20
+    datafiles = [ 0 ]
 
 def submitJob(dataFiles,optionsFile):
     """Function to submit jobs to the grid from a string of data files and a
 specifed options file."""
     for i in dataFiles:
         j=Job()
-        j.application=DaVinci(version="v34r0")
+
+        j.application = args.application
 
         j.application.optsfile=File(optionsFile)
 
-        j.backend=Dirac()
-        # j.backend=Interactive()
+        # j.backend=Dirac()
+        j.backend=Interactive()
 
-        j.splitter=SplitByFiles(filesPerJob=Jobs)
+        if args.nosplit != True:
+            j.splitter=SplitByFiles(filesPerJob=args.jobs)
 
-        bkq = BKQuery()
+        if args.browse == True:
+            data=browseBK()
+	elif args.readinputdata == True:
+	    # data= + args.application + ".readInputData(" + args.readinputdata + ")")
+	    data = j.application.readInputData(args.readinputdata)
+        else:
+            bkq = BKQuery()
+    
+            bkq.path = i
 
-        bkq.path = i
-
-        data = bkq.getDataset()
+            data = bkq.getDataset()
 
         j.inputdata=data
 
         j.submit()
 
-submitJob(dataFiles,optionsFile)
+if not args.dryrun:
+    submitJob(dataFiles,optionsFile)
