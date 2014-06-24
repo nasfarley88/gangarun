@@ -24,6 +24,7 @@ parser.add_argument("--browse", help="browse for specified data file", action='s
 parser.add_argument("-a","--application", help="specify application being used", default='DaVinci()')
 parser.add_argument("--readinputdata",help="specify data .py fie")
 parser.add_argument("--dryrun", help="Dry run the program, without submitting or setting up a job", action='store_true')
+parser.add_argument("--dirac", help="if specified, job will run on the grid", action='store_true')
 parser.parse_args()
 
 args = parser.parse_args()
@@ -34,10 +35,10 @@ print args
 if args.optionsfile:
     optionsFile = args.optionsfile
 
-if args.datafiles:
+if not args.datafiles == []:
     dataFiles = args.datafiles
 else:
-    datafiles = [ 0 ]
+    datafiles = [ 'null string' ]
 
 def submitJob(dataFiles,optionsFile):
     """Function to submit jobs to the grid from a string of data files and a
@@ -46,11 +47,14 @@ specifed options file."""
         j=Job()
 
         exec( 'j.application = ' + args.application )
-
+        #j.application = Brunel()
+        
         j.application.optsfile=File(optionsFile)
 
-        # j.backend=Dirac()
-        j.backend=Interactive()
+        if args.dirac:
+            j.backend=Dirac()
+        else:
+            j.backend=Interactive()
 
         if args.nosplit != True:
             j.splitter=SplitByFiles(filesPerJob=args.jobs)
