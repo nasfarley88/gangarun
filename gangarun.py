@@ -45,7 +45,7 @@ specifed options file."""
     for i in dataFiles:
         j=Job()
 
-        j.application = args.application
+        exec( 'j.application = ' + args.application )
 
         j.application.optsfile=File(optionsFile)
 
